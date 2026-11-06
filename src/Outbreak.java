@@ -17,8 +17,34 @@ public class Outbreak {
      * Main calls this twice: with all costs equal to 1 (the line "Tests needed") and with the real costs ("Cheapest testing").
      */
     public static boolean[] cheapestTests(int n, int[][] nb, int[] cost) {
-        // TODO Mission 5a
-        return new boolean[n];
+        boolean[] tested = new boolean[n];
+        if (n == 0) return tested;
+        long[][] dp = new long[n][2];
+        testingCosts(0, -1, nb, cost, dp);
+        chooseTests(0, -1, dp[0][1] <= dp[0][0], nb, dp, tested);
+        return tested;
+    }
+
+    /** Compute costs from the leaves up; state 0 skips v, state 1 tests v. */
+    private static void testingCosts(int v, int parent, int[][] nb, int[] cost, long[][] dp) {
+        dp[v][1] = cost[v];
+        for (int child : nb[v]) {
+            if (child == parent) continue;
+            testingCosts(child, v, nb, cost, dp);
+            dp[v][0] += dp[child][1]; // If v is skipped, its child must cover the link.
+            dp[v][1] += Math.min(dp[child][0], dp[child][1]);
+        }
+    }
+
+    /** Rebuild a minimum-cost choice, forcing children to be tested if v is skipped. */
+    private static void chooseTests(int v, int parent, boolean take, int[][] nb,
+                                    long[][] dp, boolean[] tested) {
+        tested[v] = take;
+        for (int child : nb[v]) {
+            if (child == parent) continue;
+            boolean takeChild = !take || dp[child][1] <= dp[child][0];
+            chooseTests(child, v, takeChild, nb, dp, tested);
+        }
     }
 
     /**
@@ -27,7 +53,27 @@ public class Outbreak {
      * Example: a line 0-1-2-3 has chain 3; a star with centre 0 and leaves 1, 2, 3 has chain 2.
      */
     public static int longestChain(int n, int[][] nb) {
-        // TODO Mission 5b
-        return -1;
+        if (n == 0) return 0;
+        int[] best = {0};
+        chainHeight(0, -1, nb, best);
+        return best[0];
+    }
+
+    /** Return the longest way down and update the best path through each vertex. */
+    private static int chainHeight(int v, int parent, int[][] nb, int[] best) {
+        int first = 0;
+        int second = 0;
+        for (int child : nb[v]) {
+            if (child == parent) continue;
+            int length = 1 + chainHeight(child, v, nb, best);
+            if (length > first) {
+                second = first;
+                first = length;
+            } else if (length > second) {
+                second = length;
+            }
+        }
+        best[0] = Math.max(best[0], first + second);
+        return first;
     }
 }
