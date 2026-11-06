@@ -11,8 +11,15 @@ public class Marker {
      * Example: p = "ACGAC" gives [0, 0, 0, 1, 2]. The last number is the "Border length" line.
      */
     public static int[] prefixFunction(String p) {
-        // TODO Mission 3a
-        return new int[p.length()];
+        int[] pi = new int[p.length()];
+        for (int i = 1; i < p.length(); i++) {
+            int j = pi[i - 1];
+            // Try shorter borders until the next letter matches.
+            while (j > 0 && p.charAt(i) != p.charAt(j)) j = pi[j - 1];
+            if (p.charAt(i) == p.charAt(j)) j++;
+            pi[i] = j;
+        }
+        return pi;
     }
 
     /**
@@ -22,8 +29,25 @@ public class Marker {
      * the first one is "First hit" (-1 when there is none).
      */
     public static int[] findAll(String text, String p) {
-        // TODO Mission 3b
-        return new int[0];
+        // The empty word occurs at every boundary, including after the text.
+        if (p.isEmpty()) {
+            int[] all = new int[text.length() + 1];
+            for (int i = 0; i < all.length; i++) all[i] = i;
+            return all;
+        }
+        int[] pi = prefixFunction(p);
+        int[] hits = new int[text.length()];
+        int count = 0;
+        int j = 0;
+        for (int i = 0; i < text.length(); i++) {
+            while (j > 0 && text.charAt(i) != p.charAt(j)) j = pi[j - 1];
+            if (text.charAt(i) == p.charAt(j)) j++;
+            if (j == p.length()) {
+                hits[count++] = i - p.length() + 1;
+                j = pi[j - 1]; // Keep the border so overlapping matches count.
+            }
+        }
+        return Arrays.copyOf(hits, count);
     }
 
     /**
