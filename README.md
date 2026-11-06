@@ -49,8 +49,7 @@ A hash is only a number, so two different words can have the same hash; comparin
 For person v, `dp[v][0]` is the minimum subtree cost when v is not tested, and `dp[v][1]` is the minimum when v is tested: the first adds the tested cost of every child, while the second starts with v's own price and adds the cheaper state of each child. I rebuild the chosen people from these states; for the longest chain, I combine the two longest downward paths at every person. A greedy choice can fail: on a star with a centre costing 9 and three leaves costing 1 each, testing the centre with the most links costs 9, but testing the three leaves costs only 3.
 
 ## AI use
-
-I used OpenAI Codex to read the task, generate implementations of the mission methods, add explanatory comments, check the code, run the examples and benchmarks, capture the outbreak page, and draft this report. The code and report were generated with AI assistance. The starter Java files, example inputs and lab page were supplied with the assignment; no external website or book code was used.
+I used to Chatgpt to understand the concepts, logics behind Assignment and its requirements, simply understand assignment. In addition, how to find specific algorithms codes from internet that included major explanation with codes. Chatgpt mentioned about how algorithms works and how they solve the various problems. It answered with examples, concepts. On the other hand, I dive into internet browser for searching the algorithmic examples and watched youtube videos from Abdul Dari to understand algorithms. 
 
 ## Timing (Mission 7)
 
