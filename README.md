@@ -1,75 +1,86 @@
 # Assignment 4. Patient Zero
 
-Student ID:
-Name:
-Group:
-
-This file is the report. Fill it in as you go. How to start: `START_HERE.md`. The task: `docs/Assignment4.pdf`.
+Student ID: 254319  
+Name: Aisyerik  
+Group: SE-2536
 
 ## Program output
 
-The 9 lines your program prints on your data (`java -cp out Main`):
+The four personal input files were generated from student ID 254319. Strain A has 1074 letters and strain B has 1080 letters.
 
-    Mutations:
-    Shared core:
-    Marker hits:
-    First hit:
-    Border length:
-    Shared words:
-    Tests needed:
-    Cheapest testing:
-    Longest chain:
+```text
+Mutations: 83
+Shared core: 1021
+Marker hits: 7
+First hit: 3774
+Border length: 3
+Shared words: 414
+Tests needed: 38
+Cheapest testing: 159
+Longest chain: 28
+```
 
-My outbreak report (a screenshot of `output/outbreak.html`):
+All nine lines match the lab console. All three supplied examples (tiny, small and dense) pass the checker.
 
-![outbreak](output/outbreak.png)
+## Outbreak report
+
+![Outbreak console showing all five missions correct](output/outbreak.png)
 
 ## Questions
 
-Answer in your own words, two or three sentences each.
+### Mission 1. Mutations
 
-Mission 1. What does the cell d[i][j] of your table mean, and how is it computed from other cells?
+`d[i][j]` is the smallest number of edits needed to turn the first i letters of A into the first j letters of B. The first row and column count insertions and deletions; every other cell takes the minimum of deleting a letter, inserting a letter, or using the diagonal with cost zero for equal letters and one for a replacement. The bottom-right cell gives 83 edits for my strains.
 
-Mission 2. How is the longest common subsequence different from the longest common substring? My Shared core is bigger than the number of letters that are the same at the same place: why?
+### Mission 2. Shared core
 
-Mission 3. What does the prefix function tell you, and why does the pointer in the text never go back in KMP? What is the Border length of my marker and what does it mean?
+A subsequence keeps letters in their original order but may skip letters, while a substring must be continuous. My LCS has length 1021, although only 296 letters match at the same index, because an insertion or deletion shifts later letters and LCS can still match those letters at different indices. In the table, equal letters extend the diagonal result by one; otherwise I keep the larger result from the cell above or to the left.
 
-Mission 4. Why must you compare the letters after the hashes are equal? What happens to the cost of Rabin-Karp if many windows have the same hash?
+### Mission 3. The marker
 
-Mission 5. What are the two states of a person in your DP, and how do you get the answer for a person from its children? Why does a greedy "test the person with most links first" not always give the cheapest answer?
+The prefix function stores the length of the longest proper prefix that is also a suffix for each prefix of the marker. On a mismatch, KMP uses this table to shorten the matched pattern prefix while keeping the text index moving forward, so it avoids repeating text comparisons from scratch. My marker is `TCCTTTCC` and its border length is 3 because `TCC` is both its beginning and end; KMP finds seven hits, starting at position 3774.
+
+### Mission 4. Copied words
+
+A hash is only a number, so two different words can have the same hash; comparing their letters prevents a collision from becoming a false match. I store B's window positions by hash and roll through A by removing the outgoing letter, multiplying by the base and adding the incoming letter; each A position counts at most once after a full letter match. If many unequal windows share a hash, many comparisons are needed and the worst-case cost can reach O(n*m*k), rather than the expected near-linear cost for a fixed window length.
+
+### Mission 5. Whom to test
+
+For person v, `dp[v][0]` is the minimum subtree cost when v is not tested, and `dp[v][1]` is the minimum when v is tested: the first adds the tested cost of every child, while the second starts with v's own price and adds the cheaper state of each child. I rebuild the chosen people from these states; for the longest chain, I combine the two longest downward paths at every person. A greedy choice can fail: on a star with a centre costing 9 and three leaves costing 1 each, testing the centre with the most links costs 9, but testing the three leaves costs only 3.
 
 ## AI use
 
-The syllabus requires you to say which AI tools you used and for what. Write the tool (ChatGPT, Copilot, other) and what you asked it: explain an idea, find an error, review code. Write "none" if you did not use any. If you took code or text from a book or a website, give the source here.
+I used OpenAI Codex to read the task, generate implementations of the mission methods, add explanatory comments, check the code, run the examples and benchmarks, capture the outbreak page, and draft this report. The code and report were generated with AI assistance. The starter Java files, example inputs and lab page were supplied with the assignment; no external website or book code was used.
 
 ## Timing (Mission 7)
 
-Milliseconds, average of 3 runs, from `java -cp out Bench`.
+Measured with the supplied Bench class using JDK 25. Each value is the average of three runs, in milliseconds.
 
-| test | size | time |
-|---|---|---|
-| naive search | 20 000 / 40 000 / 80 000 | |
-| KMP | 20 000 / 40 000 / 80 000 | |
-| edit distance | 500 / 1000 / 2000 / 4000 | |
+| test | size | time (ms) |
+|---|---:|---:|
+| naive search | 20 000 | 164.3 |
+| naive search | 40 000 | 255.6 |
+| naive search | 80 000 | 496.1 |
+| KMP | 20 000 | 6.0 |
+| KMP | 40 000 | 3.4 |
+| KMP | 80 000 | 0.9 |
+| edit distance | 500 | 14.4 |
+| edit distance | 1000 | 12.1 |
+| edit distance | 2000 | 29.1 |
+| edit distance | 4000 | 107.3 |
 
-What do the numbers say about how the time grows? When you double the size, by how much does each time grow? Two or three sentences.
+The naive times grow about 1.56x and 1.94x as the text doubles; the pattern length stays fixed at 2000, so these data do not demonstrate quadratic growth in text length alone. KMP's measured time falls and the first edit-distance measurement is also noisy because the supplied benchmark has no separate warm-up, so these small timings should not be read as growth rates; KMP's theoretical cost is O(n+m). At the larger edit-distance sizes, doubling both strain lengths increases time about 2.40x and 3.69x, approaching the expected fourfold growth from the quadratic table.
 
 ## Complexity
 
-n is the length of the text (or of a strain), m the length of the pattern, k the length of the window, v the number of people. Fill in every algorithm you wrote.
+Here n is the length of A or the text, m is the length of B or the pattern, k is the window length, and v is the number of people. Space includes the arrays and returned results used by these implementations.
 
 | algorithm | time | space | assumptions |
 |---|---|---|---|
-| Edit distance | | | |
-| LCS | | | |
-| Prefix function and KMP | | | |
-| Rabin-Karp (shared words) | | | |
-| Tree DP | | | |
-
-## Before you submit
-
-- The four files in `data` and the screenshot `output/outbreak.png` are in the repository.
-- `java tools/Check.java` shows all examples right.
-- This README is filled in, the program output and the section AI use included.
-- The work is pushed to main (at least one commit per mission) and the repository is public.
-- The link is attached in Moodle.
+| Edit distance | O(n*m) | O(n*m) | Full table, unit-cost insertion, deletion and replacement. |
+| LCS | O(n*m) | O(n*m) | Full table; skipped letters are allowed. |
+| Prefix function | O(m) | O(m) | Border fallback uses the prefix table. |
+| KMP | O(n+m) | O(n+m) | Includes prefix table and a hit buffer of length n; overlaps count. |
+| Rabin-Karp (shared words) | O(n+m+q*k), worst O(n*m*k) | O(m) | q is the number of candidate windows verified; expected O(n+m) for fixed k and few collisions. All B positions are kept, and hashing uses fixed-size integer arithmetic. |
+| Tree DP and reconstruction | O(v) | O(v) | Connected tree with v-1 links; includes recursion and state arrays. |
+| Longest chain | O(v) | O(v) | Tree DFS with two downward lengths; recursion may reach v. |
